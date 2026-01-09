@@ -1,7 +1,6 @@
 import pandas as pd
 import sklearn
 
-127586235748
 from sklearn.datasets import load_iris
 
 data = load_iris()
