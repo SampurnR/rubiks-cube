@@ -12,3 +12,6 @@ model = LogisticRegression()
 model.fit(X,y)
 
 print(model.predict(X))
+
+
+some code over here
