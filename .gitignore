@@ -205,3 +205,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Large data files
+creditcard.csv
+*.csv
+
+# Model files
+*.pkl
+*.h5
+*.hdf5
