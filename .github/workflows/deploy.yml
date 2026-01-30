@@ -1,0 +1,40 @@
+name: Run Fraud Detection on Server
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  DOCKER_IMAGE: sampurnr/fraud-detector
+
+jobs:
+  run-predictions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run predictions on server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            # Pull latest image
+            docker pull ${{ env.DOCKER_IMAGE }}:latest
+
+            # Run prediction on sample data
+            docker run --rm \
+              -v /data/creditcard.csv:/app/creditcard.csv:ro \
+              -v /data/models:/app/models:ro \
+              ${{ env.DOCKER_IMAGE }}:latest \
+              python predict.py --mode sample --samples 20
+
+      - name: Prediction status
+        if: success()
+        run: |
+          echo "✅ Predictions completed!"
+          echo "Image: ${{ env.DOCKER_IMAGE }}:latest"
+          echo "Server: ${{ secrets.SERVER_IP }}"
