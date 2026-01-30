@@ -1,7 +1,16 @@
 """
 Train and save the best fraud detection model
 """
+import argparse
 from fraud_model import FraudDetectionModel
+
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Train and compare fraud detection models')
+parser.add_argument('--data', type=str, default='/data/creditcard.csv',
+                   help='Path to credit card data CSV file')
+parser.add_argument('--output', type=str, default='/data/models/best_fraud_detector.pkl',
+                   help='Path to save the best model')
+args = parser.parse_args()
 
 # Model configurations to try
 configs = [
@@ -31,7 +40,7 @@ for config in configs:
     )
     
     # Train
-    model.load_data('creditcard.csv')
+    model.load_data(args.data)
     model.preprocess()
     model.build_model()
     model.train()
@@ -66,10 +75,10 @@ print(f"BEST MODEL: {best_config['name']}")
 print(f"F1 Score: {best_f1:.4f}")
 print("="*80)
 
-best_model.save_model('models/best_fraud_detector.pkl')
+best_model.save_model(args.output)
 
 # Also evaluate best model with full details
 print("\nDetailed evaluation of best model:")
 best_model.evaluate(verbose=True)
 
-print("\n✓ Best model saved to models/best_fraud_detector.pkl")
+print(f"\n✓ Best model saved to {args.output}")
