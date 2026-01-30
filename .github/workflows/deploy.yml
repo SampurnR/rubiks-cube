@@ -2,26 +2,27 @@
 # Purpose: Pulls the latest Docker image and runs fraud detection predictions on a remote server
 name: Run Fraud Detection on Server
 
-# Trigger Configuration
+# Trigger Configuration: When this workflow will run
 on:
   push:
     branches:
       - main # Automatically run when code is pushed to main branch
   workflow_dispatch: # Enable manual execution via GitHub Actions UI
 
-# Global Variables
+# Global Variables: Environment variables available to all jobs
 env:
   DOCKER_IMAGE: sampurnr/fraud-detector # Docker Hub repository name
 
+# Jobs: Define the tasks to execute
 jobs:
   run-predictions:
     runs-on: ubuntu-latest # GitHub-hosted Ubuntu runner
 
     steps:
       # ========================================
-      # Step 1: SSH into server and execute predictions
+      # Step 1: SSH into server and execute commands
       # ========================================
-      - name: Run predictions on server via SSH
+      - name: Deploy and run fraud detection
         uses: appleboy/ssh-action@v1.0.3 # Third-party action for SSH connections
         with:
           # Connection credentials (stored securely in GitHub Secrets)
@@ -32,26 +33,20 @@ jobs:
 
           # Commands executed on remote server
           script: |
-            # Pull latest multi-platform image from Docker Hub
+            # Pull latest Docker image from Docker Hub
             # Note: sudo required if user lacks Docker group permissions
             sudo docker pull ${{ env.DOCKER_IMAGE }}:latest
 
-            # Train the model first (if not already trained)
-            # This creates the best model in /data/models/
-            sudo docker run --rm -v /data:/data ${{ env.DOCKER_IMAGE }}:latest python train_best_model.py --data /data/creditcard.csv --output /data/models/best_fraud_detector.pkl
+            # Train the fraud detection model
+            # - Creates the best model in /data/models/
+            # - Uses credit card data from /data/creditcard.csv
+            # - Mounts /data directory for read/write access
+            # - Container is automatically removed after completion (--rm flag)
+            sudo docker run --rm -v /data:/data ${{ env.DOCKER_IMAGE }}:latest python train_best_model.py
 
-            # Execute fraud detection predictions
+            # Run predictions on sample transactions
             # - Runs once and removes itself after completion (--rm flag)
-            # - Mounts data and models as read-only volumes for security
-            # - Analyzes 20 sample transactions and displays results
-            sudo docker run --rm -v /data:/data:ro ${{ env.DOCKER_IMAGE }}:latest python predict.py --model-path /data/models/best_fraud_detector.pkl --data /data/creditcard.csv --mode sample --samples 20
-
-      # ========================================
-      # Step 2: Report deployment status
-      # ========================================
-      - name: Prediction status
-        if: success() # Only executes if all previous steps completed successfully
-        run: |
-          echo "✅ Predictions completed!"
-          echo "Image: ${{ env.DOCKER_IMAGE }}:latest"
-          echo "Server: ${{ secrets.SERVER_IP }}"
+            # - Mounts /data directory as read-only for security (:ro flag)
+            # - Analyzes 20 random sample transactions
+            # - Displays fraud probabilities and transaction details
+            sudo docker run --rm -v /data:/data:ro ${{ env.DOCKER_IMAGE }}:latest python predict.py --mode sample --samples 20
