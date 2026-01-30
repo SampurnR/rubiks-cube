@@ -23,10 +23,10 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             # Pull latest image
-            docker pull ${{ env.DOCKER_IMAGE }}:latest
+            sudo docker pull ${{ env.DOCKER_IMAGE }}:latest
 
             # Run prediction on sample data
-            docker run --rm \
+            sudo docker run --rm \
               -v /data/creditcard.csv:/app/creditcard.csv:ro \
               -v /data/models:/app/models:ro \
               ${{ env.DOCKER_IMAGE }}:latest \
