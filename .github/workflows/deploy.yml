@@ -1,39 +1,56 @@
+# GitHub Actions Workflow: Automated Fraud Detection Deployment
+# Purpose: Pulls the latest Docker image and runs fraud detection predictions on a remote server
 name: Run Fraud Detection on Server
 
+# Trigger Configuration
 on:
   push:
     branches:
-      - main
-  workflow_dispatch: # Allow manual trigger
+      - main # Automatically run when code is pushed to main branch
+  workflow_dispatch: # Enable manual execution via GitHub Actions UI
 
+# Global Variables
 env:
-  DOCKER_IMAGE: sampurnr/fraud-detector
+  DOCKER_IMAGE: sampurnr/fraud-detector # Docker Hub repository name
 
 jobs:
   run-predictions:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # GitHub-hosted Ubuntu runner
 
     steps:
+      # ========================================
+      # Step 1: SSH into server and execute predictions
+      # ========================================
       - name: Run predictions on server via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.3 # Third-party action for SSH connections
         with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
+          # Connection credentials (stored securely in GitHub Secrets)
+          host: ${{ secrets.SERVER_IP }} # Server IP address
+          username: ${{ secrets.SERVER_USERNAME }} # SSH username
+          password: ${{ secrets.SERVER_PASSWORD }} # SSH password
+          port: ${{ secrets.SERVER_PORT || 22 }} # SSH port (default: 22)
+
+          # Commands executed on remote server
           script: |
-            # Pull latest image
+            # Pull latest multi-platform image from Docker Hub
+            # Note: sudo required if user lacks Docker group permissions
             sudo docker pull ${{ env.DOCKER_IMAGE }}:latest
 
-            # Run prediction on sample data
+            # Execute fraud detection container
+            # - Runs once and removes itself after completion (--rm flag)
+            # - Mounts data and models as read-only volumes for security
+            # - Analyzes 20 sample transactions and displays results
             sudo docker run --rm \
-              -v /data/creditcard.csv:/app/creditcard.csv:ro \
-              -v /data/models:/app/models:ro \
+              -v /data/creditcard.csv:/app/creditcard.csv:ro \  # Dataset (read-only)
+              -v /data/models:/app/models:ro \                  # Trained models (read-only)
               ${{ env.DOCKER_IMAGE }}:latest \
-              python predict.py --mode sample --samples 20
+              python predict.py --mode sample --samples 20      # Prediction command
 
+      # ========================================
+      # Step 2: Report deployment status
+      # ========================================
       - name: Prediction status
-        if: success()
+        if: success() # Only executes if all previous steps completed successfully
         run: |
           echo "✅ Predictions completed!"
           echo "Image: ${{ env.DOCKER_IMAGE }}:latest"
