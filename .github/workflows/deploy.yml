@@ -40,11 +40,7 @@ jobs:
             # - Runs once and removes itself after completion (--rm flag)
             # - Mounts data and models as read-only volumes for security
             # - Analyzes 20 sample transactions and displays results
-            sudo docker run --rm \
-              -v /data/creditcard.csv:/app/creditcard.csv:ro \  # Dataset (read-only)
-              -v /data/models:/app/models:ro \                  # Trained models (read-only)
-              ${{ env.DOCKER_IMAGE }}:latest \
-              python predict.py --mode sample --samples 20      # Prediction command
+            sudo docker run --rm -v /data/creditcard.csv:/app/creditcard.csv:ro -v /data/models:/app/models:ro ${{ env.DOCKER_IMAGE }}:latest python predict.py --mode sample --samples 20
 
       # ========================================
       # Step 2: Report deployment status
