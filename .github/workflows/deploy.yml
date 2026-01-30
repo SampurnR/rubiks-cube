@@ -38,13 +38,13 @@ jobs:
 
             # Train the model first (if not already trained)
             # This creates the best model in /data/models/
-            sudo docker run --rm -v /data:/app ${{ env.DOCKER_IMAGE }}:latest python train_best_model.py --data /app/creditcard.csv --output /app/models/best_fraud_detector.pkl
+            sudo docker run --rm -v /data/creditcard.csv:/app/data/creditcard.csv:ro -v /data/models:/app/data/models ${{ env.DOCKER_IMAGE }}:latest python train_best_model.py --data /app/data/creditcard.csv --output /app/data/models/best_fraud_detector.pkl
 
             # Execute fraud detection predictions
             # - Runs once and removes itself after completion (--rm flag)
             # - Mounts data and models as read-only volumes for security
             # - Analyzes 20 sample transactions and displays results
-            sudo docker run --rm -v /data:/app ${{ env.DOCKER_IMAGE }}:latest python predict.py --model-path /app/models/best_fraud_detector.pkl --data /app/creditcard.csv --mode sample --samples 20
+            sudo docker run --rm -v /data/creditcard.csv:/app/data/creditcard.csv:ro -v /data/models:/app/data/models:ro ${{ env.DOCKER_IMAGE }}:latest python predict.py --model-path /app/data/models/best_fraud_detector.pkl --data /app/data/creditcard.csv --mode sample --samples 20
 
       # ========================================
       # Step 2: Report deployment status
