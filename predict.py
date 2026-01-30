@@ -173,7 +173,7 @@ def predict_high_risk_transactions(model_path, data_path='creditcard.csv',
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Make fraud predictions')
-    parser.add_argument('--model', type=str, default='models/best_fraud_detector.pkl',
+    parser.add_argument('--model-path', type=str, default='models/best_fraud_detector.pkl',
                        help='Path to trained model')
     parser.add_argument('--data', type=str, default='creditcard.csv',
                        help='Path to data file')
@@ -195,14 +195,14 @@ if __name__ == "__main__":
     
     if args.mode == 'sample':
         # Predict on random samples
-        predict_sample_transactions(args.model, args.data, args.samples)
+        predict_sample_transactions(args.model_path, args.data, args.samples)
     elif args.mode == 'file':
         # Predict on entire file
         if not args.input:
             print("Error: --input required for file mode")
             exit(1)
-        predict_from_csv(args.model, args.input, args.output)
+        predict_from_csv(args.model_path, args.input, args.output)
     elif args.mode == 'high-risk':
         # Find high risk transactions
-        predict_high_risk_transactions(args.model, args.data, 
+        predict_high_risk_transactions(args.model_path, args.data, 
                                       args.threshold, args.top)
