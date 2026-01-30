@@ -21,5 +21,8 @@ COPY predict.py .
 # Copy trained model (if exists)
 COPY models/ models/
 
+# Create data directory for volume mounting
+RUN mkdir -p /data
+
 # Default command (predict mode)
 CMD ["python", "predict.py", "--mode", "sample", "--samples", "10"]
