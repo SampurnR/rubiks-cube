@@ -173,9 +173,9 @@ def predict_high_risk_transactions(model_path, data_path='creditcard.csv',
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Make fraud predictions')
-    parser.add_argument('--model-path', type=str, default='models/best_fraud_detector.pkl',
+    parser.add_argument('--model-path', type=str, default='/data/models/best_fraud_detector.pkl',
                        help='Path to trained model')
-    parser.add_argument('--data', type=str, default='creditcard.csv',
+    parser.add_argument('--data', type=str, default='/data/creditcard.csv',
                        help='Path to data file')
     parser.add_argument('--mode', type=str, default='sample',
                        choices=['sample', 'file', 'high-risk'],
