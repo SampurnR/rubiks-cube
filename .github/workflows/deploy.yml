@@ -36,7 +36,11 @@ jobs:
             # Note: sudo required if user lacks Docker group permissions
             sudo docker pull ${{ env.DOCKER_IMAGE }}:latest
 
-            # Execute fraud detection container
+            # Train the model first (if not already trained)
+            # This creates the best model in /data/models/
+            sudo docker run --rm -v /data/creditcard.csv:/app/creditcard.csv:ro -v /data/models:/app/models ${{ env.DOCKER_IMAGE }}:latest python train_best_model.py
+
+            # Execute fraud detection predictions
             # - Runs once and removes itself after completion (--rm flag)
             # - Mounts data and models as read-only volumes for security
             # - Analyzes 20 sample transactions and displays results
